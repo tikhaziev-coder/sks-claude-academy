@@ -400,7 +400,7 @@ footer .contacts{margin-left:auto;margin-right:auto}
       <a href="#prompts">Промпты</a>
       <a href="#how">Как начать</a>
       <a href="#materials">Материалы</a>
-      <a href="#run">Запуск</a>
+      <a href="#run" style="display:none">Запуск</a>
       <a href="#faq">FAQ</a>
     </div>
     <button class="icon-btn burger" id="burger" aria-label="Меню">☰</button>
@@ -427,7 +427,7 @@ footer .contacts{margin-left:auto;margin-right:auto}
       <a href="#prof" class="btn primary">Найти сценарии для моей профессии →</a>
       <a href="#what" class="btn ghost">Разница: чат / Cowork / код</a>
     </div>
-    <div class="stats">
+    <div class="stats" style="display:none">
       <div class="stat"><b>10</b><span>профессий с готовыми сценариями</span></div>
       <div class="stat"><b>3</b><span>уровня сложности материала</span></div>
       <div class="stat"><b>∞</b><span>экономия времени на рутине</span></div>
@@ -882,12 +882,17 @@ footer .contacts{margin-left:auto;margin-right:auto}
       <h2>Видео-гайды</h2>
       <p class="muted">Видео по работе с Claude. Нажми ▶ — плеер откроется прямо здесь. Чтобы посмотреть другое видео, выбери его в списке ниже.</p>
     </div>
-    <div class="video-player reveal" id="ytPlayer" data-id="1mt-T7HCdGriKUlojquymm9rYaJRjXL6y" data-type="drive">
+    <div class="video-player reveal" id="ytPlayer" data-id="1KVdyinIm-Dct-DiJNJUQ6pUbK4BimG9H" data-type="drive">
       <div class="video-poster"><img src="logo.svg" alt="СКС"></div>
       <button class="video-play" type="button" aria-label="Смотреть видео"><span>▶</span></button>
     </div>
     <div class="video-list reveal" id="ytList">
-      <button class="vid-item is-active" type="button" data-type="drive" data-id="1mt-T7HCdGriKUlojquymm9rYaJRjXL6y">
+      <button class="vid-item is-active" type="button" data-type="drive" data-id="1KVdyinIm-Dct-DiJNJUQ6pUbK4BimG9H">
+        <span class="vid-thumb poster"><img src="logo.svg" alt="СКС"></span>
+        <span class="vid-title">Встреча по ИИ №2</span>
+        <span class="vid-meta">Внутренняя запись · СКС</span>
+      </button>
+      <button class="vid-item" type="button" data-type="drive" data-id="1mt-T7HCdGriKUlojquymm9rYaJRjXL6y">
         <span class="vid-thumb poster"><img src="logo.svg" alt="СКС"></span>
         <span class="vid-title">Встреча по ИИ №1</span>
         <span class="vid-meta">Внутренняя запись · СКС</span>
@@ -1066,7 +1071,7 @@ footer .contacts{margin-left:auto;margin-right:auto}
 </section>
 
 <!-- RUN: где запускать -->
-<section id="run">
+<section id="run" style="display:none">
   <div class="wrap">
     <div class="section-head reveal">
       <div class="eyebrow">Где запускать</div>

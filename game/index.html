@@ -140,7 +140,7 @@
       <div><span class="chip" style="background:#ffd23f"></span>Монетка — выручка</div>
       <div><span class="chip" style="background:#46e0b0"></span>🕒 Часы — Режим защиты от аудита</div>
       <div><span class="chip" style="background:#c0392b"></span>Регулятор (ЦБ)</div>
-      <div><span class="chip" style="background:#6f7681"></span>Антибизнес (юристы/финмон)</div>
+      <div><span class="chip" style="background:#6f7681"></span>antibusiness</div>
       <div><span class="chip" style="background:#556b2f"></span>Пристав (быстрый!)</div>
       <div><span class="chip" style="background:#c98a3a"></span>☕ Кофе — «Аврал»: супер-прыжок</div>
       <div><span class="chip" style="background:#2ecc71"></span>Флаг — отчётность сдана</div>
@@ -283,7 +283,7 @@
     tiles = [];                 // 2D solid grid
     items = [];                 // coins, clocks
     enemies = [];
-    flyers = [];                // "Антибизнес"
+    flyers = [];                // "antibusiness"
     movers = [];                // лифты/движущиеся платформы
     winSeq = null;
     flagX = (levelW-3)*TILE;
@@ -330,7 +330,7 @@
     return {x,y, x0:x, y0:y, w:TILE*2-6, h:14, axis, span, spd: axis==='h'?1.1:0.9,
             dir:1, dx:0, dy:0};
   }
-  // "Антибизнес" — медленное летающее создание, легко увернуться
+  // "antibusiness" — медленное летающее создание, легко увернуться
   function makeFlyer(x,y){
     return {x:x+2,y:y+4, baseY:y+4, w:28,h:22, vx:-0.5, alive:true, squashT:0,
             t:Math.random()*6, flap:Math.random()*6};
@@ -533,7 +533,7 @@
       }
     }
 
-    // flyers — "Антибизнес": медленные, плавают по синусоиде, легко увернуться
+    // flyers — "antibusiness": медленные, плавают по синусоиде, легко увернуться
     for(const fl of flyers){
       if(!fl.alive){ fl.squashT-=dt; continue; }
       fl.t+=dt; fl.flap+=dt*7;
@@ -547,7 +547,7 @@
         const stomp = p.vy>0 && (p.y+p.h - fl.y) < 16;
         if(stomp){ fl.alive=false; fl.squashT=0.5; p.vy=-7; coins+=2; updateHUD(); }
         else if(p.buff>0){ fl.alive=false; fl.squashT=0.5; coins+=2; updateHUD(); }
-        else if(p.invuln<=0){ loseLife('Антибизнес тебя зарубил: «так нельзя, это риск».'); return; }
+        else if(p.invuln<=0){ loseLife('antibusiness тебя зарубил: «так нельзя, это риск».'); return; }
       }
     }
 
@@ -890,7 +890,7 @@
     ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
   }
 
-  // "Антибизнес" — ворчливое летающее создание (юристы/финмон), медленное
+  // "antibusiness" — ворчливое медленное летающее создание
   function drawFlyer(fl){
     if(!fl.alive){
       if(fl.squashT>0){ ctx.fillStyle='#6b6f76'; ctx.fillRect(fl.x, fl.y+fl.h-5, fl.w,5); }
@@ -912,10 +912,10 @@
     // недовольный рот
     ctx.strokeStyle='#222'; ctx.beginPath();
     ctx.moveTo(cx-5, fl.y+fl.h-5); ctx.quadraticCurveTo(cx, fl.y+fl.h-9, cx+5, fl.y+fl.h-5); ctx.stroke();
-    // подпись "Антибизнес"
+    // подпись "antibusiness"
     ctx.font='bold 9px Trebuchet MS'; ctx.textAlign='center';
-    ctx.fillStyle='#000'; ctx.fillText('Антибизнес', cx+0.7, fl.y-5+0.7);
-    ctx.fillStyle='#ff6b6b'; ctx.fillText('Антибизнес', cx, fl.y-6);
+    ctx.fillStyle='#000'; ctx.fillText('antibusiness', cx+0.7, fl.y-5+0.7);
+    ctx.fillStyle='#ff6b6b'; ctx.fillText('antibusiness', cx, fl.y-6);
   }
 
   function drawPlayer(p){

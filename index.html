@@ -1527,14 +1527,11 @@ if(SUPABASE_URL && SUPABASE_KEY && window.supabase){ try{ supa=window.supabase.c
     const blob=new Blob([JSON.stringify({plays:n})],{type:'application/json'});
     try{ await supa.storage.from(SUPABASE_BUCKET).upload(KEY,blob,{upsert:true,cacheControl:'0',contentType:'application/json'}); }catch(e){}
   }
-  const show=n=>{ el.innerHTML = (n==null) ? '' : `👥 Сыграли: <b>${n}</b> чел.`; };
+  const show=n=>{ el.innerHTML = (n==null) ? '' : `🎮 Игру запускали: <b>${n}</b> ${plural(n,'раз','раза','раз')}`; };
   window.__onGamePlay=async function(){
     let n=await readPlays();
     if(n==null) return;                          // нет связи с хранилищем — молча пропускаем
-    if(!localStorage.getItem('sks_game_played')){ // считаем один раз с устройства
-      n=n+1; localStorage.setItem('sks_game_played','1');
-      await writePlays(n);
-    }
+    n=n+1; await writePlays(n);                  // считаем КАЖДЫЙ запуск
     show(n);
   };
   readPlays().then(show);                         // показать текущее число при загрузке

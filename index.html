@@ -340,8 +340,6 @@ footer .contacts{margin-left:auto;margin-right:auto}
 .game-card-body h3{margin:0 0 6px;font-size:1.18rem}
 .game-card-body p{margin:0 0 12px}
 @media(max-width:560px){.game-card{flex-direction:column;text-align:center}.game-card-art{flex-basis:auto;width:100%}}
-.game-count{text-align:center;margin-top:16px;color:var(--muted);font-size:.95rem;font-weight:600;min-height:1.2em}
-.game-count b{color:var(--brand);font-size:1.08rem}
 /* модал игры */
 .game-modal{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.74);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;padding:18px}
 .game-modal.open{display:flex}
@@ -1182,7 +1180,6 @@ footer .contacts{margin-left:auto;margin-right:auto}
         <span class="btn primary">▶ Играть прямо тут</span>
       </div>
     </div>
-    <div class="game-count" id="gamePlays" aria-live="polite"></div>
   </div>
 </section>
 
@@ -1494,7 +1491,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.getElemen
   const gm=document.getElementById('gameModal'), frame=document.getElementById('gameFrame');
   const open=document.getElementById('gameOpen'), x=document.getElementById('gameModalX');
   const GAME_SRC='game/index.html';
-  function openGame(){ frame.src=GAME_SRC; gm.classList.add('open'); document.body.style.overflow='hidden'; if(window.__onGamePlay) window.__onGamePlay(); }
+  function openGame(){ frame.src=GAME_SRC; gm.classList.add('open'); document.body.style.overflow='hidden'; }
   function closeGame(){ gm.classList.remove('open'); frame.src='about:blank'; document.body.style.overflow=''; }
   if(open){ open.addEventListener('click',openGame);
     open.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openGame(); } }); }
@@ -1506,36 +1503,6 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.getElemen
 /* Supabase-клиент (общее облачное хранилище статей) */
 let supa=null;
 if(SUPABASE_URL && SUPABASE_KEY && window.supabase){ try{ supa=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY); }catch(e){} }
-
-/* Счётчик игроков: хранится как .game-plays.json в том же bucket (в список статей не попадает) */
-(function(){
-  const el=document.getElementById('gamePlays');
-  if(!el) return;
-  const KEY='.game-plays.json';
-  const pubUrl=()=> supa ? supa.storage.from(SUPABASE_BUCKET).getPublicUrl(KEY).data.publicUrl : null;
-  async function readPlays(){
-    const u=pubUrl(); if(!u) return null;
-    try{
-      const r=await fetch(u,{cache:'no-store'}); // без ?query — Supabase отдаёт public только по чистому URL
-      if(!r.ok) return 0;                       // файла ещё нет — значит 0
-      const j=await r.json();
-      return (j && typeof j.plays==='number') ? j.plays : 0;
-    }catch(e){ return null; }
-  }
-  async function writePlays(n){
-    if(!supa) return;
-    const blob=new Blob([JSON.stringify({plays:n})],{type:'application/json'});
-    try{ await supa.storage.from(SUPABASE_BUCKET).upload(KEY,blob,{upsert:true,cacheControl:'0',contentType:'application/json'}); }catch(e){}
-  }
-  const show=n=>{ el.innerHTML = (n==null) ? '' : `🎮 Игру запускали: <b>${n}</b> ${plural(n,'раз','раза','раз')}`; };
-  window.__onGamePlay=async function(){
-    let n=await readPlays();
-    if(n==null) return;                          // нет связи с хранилищем — молча пропускаем
-    n=n+1; await writePlays(n);                  // считаем КАЖДЫЙ запуск
-    show(n);
-  };
-  readPlays().then(show);                         // показать текущее число при загрузке
-})();
 
 async function fetchRepoArticles(){
   const {owner,repo,branch}=repoInfo();

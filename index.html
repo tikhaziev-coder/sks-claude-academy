@@ -343,10 +343,10 @@ footer .contacts{margin-left:auto;margin-right:auto}
 /* модал игры */
 .game-modal{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.74);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;padding:18px}
 .game-modal.open{display:flex}
-.game-modal-box{width:min(960px,100%);max-height:94vh;display:flex;flex-direction:column;background:#0b1224;border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.6)}
-.game-modal-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 16px;background:#16234a;color:#fff;border-bottom:1px solid rgba(255,255,255,.1)}
+.game-modal-box{width:min(1180px,100%);height:94vh;display:flex;flex-direction:column;background:#0b1224;border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.game-modal-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 16px;background:#16234a;color:#fff;border-bottom:1px solid rgba(255,255,255,.1);flex:0 0 auto}
 .game-modal-top h3{margin:0;font-size:1.02rem;color:#fff}
-.game-modal-frame{position:relative;width:100%;aspect-ratio:16/9;background:#000}
+.game-modal-frame{position:relative;width:100%;flex:1 1 auto;min-height:0;background:#000}
 .game-modal-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
 .md-body table{border-collapse:collapse;width:100%;margin:1em 0;font-size:.92rem}
 .md-body th,.md-body td{border:1px solid var(--line);padding:8px 12px;text-align:left}
@@ -986,7 +986,7 @@ footer .contacts{margin-left:auto;margin-right:auto}
 <div class="game-modal" id="gameModal">
   <div class="game-modal-box">
     <div class="game-modal-top">
-      <h3>🎮 СКС: Побег от Регулятора</h3>
+      <h3 id="gameModalTitle">🎮 СКС: Побег от Регулятора</h3>
       <button class="modal-x" id="gameModalX" aria-label="Закрыть">✕</button>
     </div>
     <div class="game-modal-frame"><iframe id="gameFrame" title="Игра СКС" allow="autoplay; fullscreen"></iframe></div>
@@ -1169,15 +1169,25 @@ footer .contacts{margin-left:auto;margin-right:auto}
   <div class="wrap">
     <div class="section-head reveal">
       <div class="eyebrow">Сделано в Claude Code</div>
-      <h2>Игра «за 20 минут»</h2>
-      <p class="muted">Мини-платформер про будни СКС: собирай выручку, уворачивайся от Регулятора, Приставов и Антибизнеса, лови баффы — часы и кофе. Собрана в Claude Code буквально за пару подходов, как пример того, что можно сделать быстро. Запускается прямо здесь, на странице.</p>
+      <h2>Игры</h2>
+      <p class="muted">Мини-игры про будни СКС, собранные в Claude Code как пример того, что можно сделать быстро. Запускаются прямо здесь, на странице.</p>
     </div>
-    <div class="game-card reveal" id="gameOpen" role="button" tabindex="0" aria-label="Запустить игру">
-      <div class="game-card-art"><span class="game-emoji">🎮</span></div>
-      <div class="game-card-body">
-        <h3>СКС: Побег от Регулятора</h3>
-        <p class="muted">2D-платформер в стиле Mario. Управление с клавиатуры или экранными кнопками.</p>
-        <span class="btn primary">▶ Играть прямо тут</span>
+    <div class="games-list" style="display:grid;gap:16px;max-width:720px;margin:0 auto">
+      <div class="game-card reveal js-game-open" id="gameOpen" role="button" tabindex="0" aria-label="Запустить игру «СКС: Побег от Регулятора»" data-src="game/index.html" data-title="🎮 СКС: Побег от Регулятора">
+        <div class="game-card-art"><span class="game-emoji">🎮</span></div>
+        <div class="game-card-body">
+          <h3>СКС: Побег от Регулятора</h3>
+          <p class="muted">2D-платформер в стиле Mario про будни СКС: собирай выручку, уворачивайся от Регулятора, Приставов и Антибизнеса, лови баффы. Клавиатура или экранные кнопки.</p>
+          <span class="btn primary">▶ Играть прямо тут</span>
+        </div>
+      </div>
+      <div class="game-card reveal js-game-open" role="button" tabindex="0" aria-label="Запустить игру «Ломбард: Детектив СБ»" data-src="game-sb/index.html" data-title="🕵️ Ломбард: Детектив СБ">
+        <div class="game-card-art" style="background:linear-gradient(180deg,#3a3326,#15130f)"><span class="game-emoji">🕵️</span></div>
+        <div class="game-card-body">
+          <h3>Ломбард: Детектив СБ</h3>
+          <p class="muted">Детективный квест от коллеги: ведёшь расследование глазами службы безопасности ломбарда — изучаешь улики и принимаешь решения. Тоже собрана в Claude Code.</p>
+          <span class="btn primary">▶ Играть прямо тут</span>
+        </div>
       </div>
     </div>
   </div>
@@ -1489,12 +1499,14 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.getElemen
 /* Игровой модал: грузим iframe только при открытии, выгружаем при закрытии */
 (function(){
   const gm=document.getElementById('gameModal'), frame=document.getElementById('gameFrame');
-  const open=document.getElementById('gameOpen'), x=document.getElementById('gameModalX');
-  const GAME_SRC='game/index.html';
-  function openGame(){ frame.src=GAME_SRC; gm.classList.add('open'); document.body.style.overflow='hidden'; }
+  const title=document.getElementById('gameModalTitle'), x=document.getElementById('gameModalX');
+  function openGame(src,name){ frame.src=src; if(title&&name) title.textContent=name; gm.classList.add('open'); document.body.style.overflow='hidden'; }
   function closeGame(){ gm.classList.remove('open'); frame.src='about:blank'; document.body.style.overflow=''; }
-  if(open){ open.addEventListener('click',openGame);
-    open.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openGame(); } }); }
+  document.querySelectorAll('.js-game-open').forEach(card=>{
+    const src=card.getAttribute('data-src'), name=card.getAttribute('data-title');
+    card.addEventListener('click',()=>openGame(src,name));
+    card.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openGame(src,name); } });
+  });
   if(x) x.addEventListener('click',closeGame);
   gm.addEventListener('click',e=>{ if(e.target===gm) closeGame(); });
   document.addEventListener('keydown',e=>{ if(e.key==='Escape' && gm.classList.contains('open')) closeGame(); });

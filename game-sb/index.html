@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ломбард: Детектив СБ</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+  --bg: #0f0e0c;
+  --panel: #1a1814;
+  --border: #2e2a22;
+  --gold: #c9a84c;
+  --gold-dim: #7a5f25;
+  --red: #c94444;
+  --green: #4caf71;
+  --text: #e8dfc8;
+  --muted: #7a7060;
+  --warning: #d97c2a;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ── HUD ── */
+#hud {
+  background: var(--panel);
+  border-bottom: 2px solid var(--gold-dim);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.logo {
+  font-family: 'Oswald', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 1px;
+}
+.logo span { color: var(--text); font-weight: 400; font-size: 13px; }
+.hud-stats {
+  display: flex;
+  gap: 14px;
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.hud-block { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.hud-block .val { color: var(--text); font-size: 14px; font-weight: 700; }
+
+/* ── TABS ── */
+#tabs {
+  display: flex;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.tab {
+  flex: 1;
+  padding: 10px 4px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 0.2s;
+  font-family: 'Oswald', sans-serif;
+}
+.tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+/* ── SCROLL AREA ── */
+#scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── TAB PANELS ── */
+.tab-panel { display: none; padding: 14px; flex-direction: column; gap: 12px; }
+.tab-panel.active { display: flex; }
+
+/* ── SECTION LABEL ── */
+.slabel {
+  font-family: 'Oswald', sans-serif;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--gold-dim);
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 5px;
+  margin-bottom: 2px;
+}
+
+/* ── CLIENT CARD ── */
+.client-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+}
+.avatar {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px;
+  border: 2px solid var(--gold-dim);
+  flex-shrink: 0;
+  position: relative;
+}
+.avatar-ring {
+  position: absolute; inset: -3px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  transition: border-color 0.4s;
+}
+.client-meta { flex: 1; min-width: 0; }
+.client-name {
+  font-family: 'Oswald', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--gold);
+  line-height: 1.1;
+}
+.client-age { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.behavior-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+.tag { font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+.tag.neutral { background: #2a2620; color: var(--muted); }
+.tag.sus { background: #3a1c1c; color: #e07070; }
+.tag.ok { background: #1c3020; color: #70c090; }
+
+/* ── INFO ROWS ── */
+.info-table { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.info-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+.info-row:last-child { border-bottom: none; }
+.info-row .lbl { font-size: 12px; color: var(--muted); }
+.info-row .val2 { font-size: 13px; font-weight: 600; color: var(--text); text-align: right; max-width: 55%; }
+
+/* ── ITEM CARD ── */
+.item-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 16px;
+  text-align: center;
+}
+.item-icon { font-size: 56px; line-height: 1; margin-bottom: 8px; }
+.item-name { font-family: 'Oswald', sans-serif; font-size: 20px; color: var(--gold); }
+.item-desc { font-size: 12px; color: var(--muted); margin: 4px 0 14px; }
+.item-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: left; }
+.detail-block { background: #13120f; border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; }
+.dl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 3px; }
+.dv { font-size: 13px; font-weight: 600; }
+
+/* ── CLUE ── */
+.clue-box {
+  background: #1f1a12;
+  border: 1px solid var(--gold-dim);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--warning);
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  line-height: 1.5;
+}
+.clue-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+/* ── SPEECH ── */
+.speech-wrap { display: flex; align-items: flex-end; gap: 10px; }
+.speech-avatar { font-size: 28px; flex-shrink: 0; }
+.speech-bubble {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px 14px 14px 0;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-style: italic;
+  color: var(--text);
+  line-height: 1.5;
+  flex: 1;
+}
+
+.questions { display: flex; flex-direction: column; gap: 8px; }
+.q-btn {
+  background: #1e1c18;
+  border: 1px solid var(--border);
+  color: var(--gold);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: background 0.2s;
+}
+.q-btn:active { background: #2a2618; }
+.q-btn:disabled { opacity: 0.4; }
+
+/* ── METER ── */
+.meter-box { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+.meter-lbl { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+.meter-bg { background: #0a0908; border-radius: 4px; height: 12px; overflow: hidden; }
+.meter-fill { height: 100%; border-radius: 4px; transition: width 0.5s, background 0.5s; }
+.meter-val { text-align: right; font-size: 15px; font-weight: 700; margin-top: 6px; }
+
+/* ── CHECKS ── */
+.checks { display: flex; flex-direction: column; gap: 8px; }
+.check-item {
+  display: flex; align-items: center; gap: 12px;
+  background: #13120f;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 13px 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.check-item:active { background: #1c1a16; }
+.check-ico { font-size: 20px; width: 24px; text-align: center; flex-shrink: 0; }
+.check-lbl { flex: 1; font-size: 14px; }
+.check-res { font-size: 12px; font-weight: 700; text-align: right; }
+.check-res.ok { color: var(--green); }
+.check-res.fail { color: var(--red); }
+.check-res.warn { color: var(--warning); }
+
+/* ── VERDICT BUTTONS ── */
+.verdict-area { display: flex; flex-direction: column; gap: 10px; padding: 14px; flex-shrink: 0; border-top: 1px solid var(--border); background: var(--bg); }
+.verdict-btn {
+  padding: 15px;
+  border-radius: 12px;
+  border: none;
+  font-family: 'Oswald', sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+}
+.verdict-btn:active { transform: scale(0.97); }
+.btn-approve { background: var(--green); color: #0a1a12; }
+.btn-reject  { background: var(--red);   color: #fff; }
+.btn-detain  { background: var(--warning); color: #1a0d04; }
+
+/* ── OVERLAY ── */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.88);
+  display: flex; align-items: flex-end; justify-content: center;
+  z-index: 100;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s;
+}
+.overlay.show { opacity: 1; pointer-events: all; }
+.result-sheet {
+  background: var(--panel);
+  border: 1px solid var(--gold-dim);
+  border-radius: 20px 20px 0 0;
+  padding: 28px 20px 36px;
+  width: 100%;
+  max-width: 480px;
+  text-align: center;
+}
+.result-icon { font-size: 52px; margin-bottom: 12px; }
+.result-title { font-family: 'Oswald', sans-serif; font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.result-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 16px; }
+.result-score { font-size: 20px; font-weight: 700; color: var(--gold); margin-bottom: 22px; }
+.next-btn {
+  background: var(--gold); color: #0f0e0c;
+  border: none; border-radius: 12px;
+  padding: 15px 0; width: 100%;
+  font-family: 'Oswald', sans-serif; font-size: 17px; font-weight: 700;
+  cursor: pointer; letter-spacing: 1px;
+}
+
+/* ── GAME OVER ── */
+#game-over {
+  display: none; position: fixed; inset: 0;
+  background: #0f0e0c;
+  flex-direction: column; align-items: center; justify-content: center;
+  z-index: 200; gap: 16px; text-align: center; padding: 30px;
+}
+#game-over.show { display: flex; }
+.go-title { font-family: 'Oswald', sans-serif; font-size: 42px; color: var(--gold); }
+.go-sub { font-size: 15px; color: var(--muted); }
+.go-score { font-size: 30px; font-weight: 700; }
+#restart-btn {
+  background: var(--gold); color: #0f0e0c;
+  border: none; border-radius: 12px;
+  padding: 15px 40px; margin-top: 8px;
+  font-family: 'Oswald', sans-serif; font-size: 18px; font-weight: 700;
+  cursor: pointer; letter-spacing: 1px;
+}
+
+/* ── LAYOUT WRAPPER ── */
+#app { display: flex; flex-direction: column; height: 100dvh; height: 100vh; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HUD -->
+  <div id="hud">
+    <div class="logo">ЛОМБАРД <span>/ СБ</span></div>
+    <div class="hud-stats">
+      <div class="hud-block"><span class="val" id="score-val">0</span><span>очки</span></div>
+      <div class="hud-block"><span class="val" id="lives-val">❤️❤️❤️</span><span>жизни</span></div>
+      <div class="hud-block"><span class="val" id="streak-val">0</span><span>серия</span></div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div id="tabs">
+    <div class="tab active" onclick="showTab('client')">👤 Клиент</div>
+    <div class="tab" onclick="showTab('item')">📦 Предмет</div>
+    <div class="tab" onclick="showTab('dialog')">💬 Опрос</div>
+    <div class="tab" onclick="showTab('checks')">🔍 Проверки</div>
+  </div>
+
+  <!-- SCROLL -->
+  <div id="scroll">
+
+    <!-- TAB: CLIENT -->
+    <div class="tab-panel active" id="tab-client">
+      <div class="client-header">
+        <div class="avatar">
+          <div class="avatar-ring" id="avatar-ring"></div>
+          <span id="client-emoji">👤</span>
+        </div>
+        <div class="client-meta">
+          <div class="client-name" id="client-name">—</div>
+          <div class="client-age" id="client-age">—</div>
+          <div class="behavior-tags" id="behavior-tags"></div>
+        </div>
+      </div>
+
+      <div class="slabel">Документы и история</div>
+      <div class="info-table">
+        <div class="info-row"><span class="lbl">Документ</span><span class="val2" id="doc-status">—</span></div>
+        <div class="info-row"><span class="lbl">Регистрация</span><span class="val2" id="reg-status">—</span></div>
+        <div class="info-row"><span class="lbl">История</span><span class="val2" id="history-status">—</span></div>
+        <div class="info-row"><span class="lbl">Время визита</span><span class="val2" id="time-status">—</span></div>
+      </div>
+
+      <div class="slabel">Индикатор подозрения</div>
+      <div class="meter-box">
+        <div class="meter-lbl">Уровень риска</div>
+        <div class="meter-bg"><div class="meter-fill" id="meter-bar" style="width:5%;background:#4caf71;"></div></div>
+        <div class="meter-val" id="meter-value" style="color:#4caf71;">5%</div>
+      </div>
+    </div>
+
+    <!-- TAB: ITEM -->
+    <div class="tab-panel" id="tab-item">
+      <div class="item-card">
+        <div class="item-icon" id="item-icon">💍</div>
+        <div class="item-name" id="item-name">—</div>
+        <div class="item-desc" id="item-desc">—</div>
+        <div class="item-grid">
+          <div class="detail-block"><div class="dl">Оценка</div><div class="dv" id="item-price">—</div></div>
+          <div class="detail-block"><div class="dl">Проба / серийный</div><div class="dv" id="item-serial">—</div></div>
+          <div class="detail-block"><div class="dl">Состояние</div><div class="dv" id="item-condition">—</div></div>
+          <div class="detail-block"><div class="dl">Документы</div><div class="dv" id="item-docs">—</div></div>
+        </div>
+      </div>
+      <div class="clue-box">
+        <span class="clue-icon">🔍</span>
+        <span id="clue-text">Задавайте вопросы и проводите проверки перед вынесением решения.</span>
+      </div>
+    </div>
+
+    <!-- TAB: DIALOG -->
+    <div class="tab-panel" id="tab-dialog">
+      <div class="slabel">Клиент говорит</div>
+      <div class="speech-wrap">
+        <div class="speech-avatar" id="speech-avatar">👤</div>
+        <div class="speech-bubble" id="client-speech">«Здравствуйте.»</div>
+      </div>
+      <div class="slabel">Задать вопрос</div>
+      <div class="questions" id="questions"></div>
+    </div>
+
+    <!-- TAB: CHECKS -->
+    <div class="tab-panel" id="tab-checks">
+      <div class="slabel">Нажмите для проверки</div>
+      <div class="checks" id="checks-list"></div>
+    </div>
+
+  </div><!-- /scroll -->
+
+  <!-- VERDICT -->
+  <div class="verdict-area">
+    <button class="verdict-btn btn-approve" onclick="makeVerdict('approve')">✅ ПРИНЯТЬ</button>
+    <div style="display:flex;gap:10px;">
+      <button class="verdict-btn btn-reject" style="flex:1;" onclick="makeVerdict('reject')">❌ ОТКАЗАТЬ</button>
+      <button class="verdict-btn btn-detain" style="flex:1;" onclick="makeVerdict('detain')">🚨 ЗАДЕРЖАТЬ</button>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- RESULT OVERLAY -->
+<div class="overlay" id="result-overlay">
+  <div class="result-sheet">
+    <div class="result-icon" id="result-icon">🏆</div>
+    <div class="result-title" id="result-title">—</div>
+    <div class="result-desc" id="result-desc">—</div>
+    <div class="result-score" id="result-score">+0 очков</div>
+    <button class="next-btn" onclick="nextClient()">СЛЕДУЮЩИЙ КЛИЕНТ →</button>
+  </div>
+</div>
+
+<!-- GAME OVER -->
+<div id="game-over">
+  <div style="font-size:56px;">🔒</div>
+  <div class="go-title">КОНЕЦ СМЕНЫ</div>
+  <div class="go-sub">Вы исчерпали все жизни</div>
+  <div class="go-score" id="final-score">0 очков</div>
+  <div style="color:var(--muted);font-size:13px;" id="final-stats">—</div>
+  <button id="restart-btn" onclick="restartGame()">НАЧАТЬ ЗАНОВО</button>
+</div>
+
+<script>
+const CLIENTS = [
+  {
+    name: "Алексей Петров", age: 34, emoji: "👨",
+    doc: "В порядке", reg: "Местная", history: "Чистая", time: "11:30",
+    behaviors: [{t:"нейтральный",s:"neutral"},{t:"спокоен",s:"ok"},{t:"вежлив",s:"ok"}],
+    item: { icon:"⌚", name:"Часы Casio G-Shock", desc:"Мужские спортивные часы, б/у",
+      price:"3 200 ₽", serial:"SN-8847291", condition:"Хорошее", docs:"Чек от 2022 г." },
+    speech: "«Срочно нужны деньги, продаю часы. Брал себе, но теперь не нужны.»",
+    questions: [
+      { q:"Откуда часы?", a:"Покупал в М.Видео пару лет назад. Чек есть.", sus: -5 },
+      { q:"Почему продаёте?", a:"Жена подарила точно такие же, теперь двое одинаковых.", sus: -10 },
+    ],
+    clue: "Чек присутствует. Серийный номер совпадает с базой. Документы в порядке.",
+    checks: [
+      { label:"Паспорт", icon:"🪪", result:"ok", text:"Действителен" },
+      { label:"Стоп-лист", icon:"🚫", result:"ok", text:"Не значится" },
+      { label:"Серийный №", icon:"🔢", result:"ok", text:"Не в розыске" },
+      { label:"Поведение", icon:"👁", result:"ok", text:"Норма" },
+    ],
+    suspicion: 5, correct: "approve", reward: 100,
+    explain: "Чистый клиент — документы, поведение и товар в полном порядке. Правильно: принять."
+  },
+  {
+    name: "Неизвестный", age: 19, emoji: "🧢",
+    doc: "ПРОСРОЧЕН (3 г.)", reg: "Нет данных", history: "Нет данных", time: "23:40",
+    behaviors: [{t:"нервозность",s:"sus"},{t:"избегает взгляда",s:"sus"},{t:"торопится",s:"sus"}],
+    item: { icon:"💍", name:"Золотое кольцо 585°", desc:"Женское обручальное, царапины",
+      price:"12 000 ₽", serial:"Без маркировки", condition:"Потёртое", docs:"Нет документов" },
+    speech: "«Это кольцо моей матери. Ей нужны деньги на лекарства. Очень срочно.»",
+    questions: [
+      { q:"Документы на ценность?", a:"Ну... это старое, давно куплено, чека нет.", sus: +15 },
+      { q:"Паспорт актуален?", a:"Я не успел поменять, это же просто бумажка.", sus: +20 },
+    ],
+    clue: "⚠️ Просроченный паспорт! Позднее время. Клиент нервничает. Украшение без документов.",
+    checks: [
+      { label:"Паспорт", icon:"🪪", result:"fail", text:"ПРОСРОЧЕН" },
+      { label:"Стоп-лист", icon:"🚫", result:"warn", text:"Совпадение фото" },
+      { label:"Серийный №", icon:"🔢", result:"warn", text:"Нет маркировки" },
+      { label:"Поведение", icon:"👁", result:"fail", text:"Тревожное" },
+    ],
+    suspicion: 90, correct: "detain", reward: 200,
+    explain: "Просроченный паспорт + совпадение в стоп-листе = задержание и вызов полиции."
+  },
+  {
+    name: "Мария Соколова", age: 52, emoji: "👩‍🦳",
+    doc: "В порядке", reg: "Местная", history: "2 визита (2021, 2023)", time: "14:15",
+    behaviors: [{t:"спокойна",s:"ok"},{t:"общительна",s:"ok"},{t:"знает процедуру",s:"ok"}],
+    item: { icon:"📱", name:"iPhone 13 Pro 256GB", desc:"Смартфон, серый, б/у",
+      price:"28 000 ₽", serial:"IMEI: 356938035643809", condition:"Хорошее", docs:"Коробка, чек" },
+    speech: "«Сдаю телефон, временно нужны деньги. Выкуплю через месяц как раньше.»",
+    questions: [
+      { q:"Телефон ваш?", a:"Да, вот в настройках — мой Apple ID, хотите проверю.", sus: -15 },
+      { q:"Почему не продаёте?", a:"Хочу выкупить обратно, привыкла к нему.", sus: -5 },
+    ],
+    clue: "IMEI не в розыске. Телефон разблокирован владелицей. Постоянный клиент.",
+    checks: [
+      { label:"Паспорт", icon:"🪪", result:"ok", text:"Действителен" },
+      { label:"Стоп-лист", icon:"🚫", result:"ok", text:"Не значится" },
+      { label:"IMEI", icon:"📡", result:"ok", text:"Не в розыске" },
+      { label:"Поведение", icon:"👁", result:"ok", text:"Норма" },
+    ],
+    suspicion: 5, correct: "approve", reward: 100,
+    explain: "Постоянный клиент с чистой историей, телефон не в розыске. Правильно: принять."
+  },
+  {
+    name: "Дмитрий Кравцов", age: 28, emoji: "🧔",
+    doc: "В порядке", reg: "Иногородний", history: "Чистая", time: "10:05",
+    behaviors: [{t:"нервничает",s:"sus"},{t:"много объясняет",s:"sus"},{t:"избегает вопросов",s:"sus"}],
+    item: { icon:"💻", name:"MacBook Pro 14\" M3", desc:"Ноутбук 2024 г., 32GB RAM",
+      price:"110 000 ₽", serial:"C02ZW1YXMD6M", condition:"Отличное", docs:"Нет, «дал друг»" },
+    speech: "«Это ноутбук друга, он попросил сдать, самому некогда. Всё нормально.»",
+    questions: [
+      { q:"Есть доверенность?", a:"Ну зачем доверенность, мы же друзья...", sus: +25 },
+      { q:"Могу позвонить другу?", a:"Он за границей, связи нет.", sus: +30 },
+    ],
+    clue: "⚠️ Чужое имущество без доверенности. Серийный номер в розыске!",
+    checks: [
+      { label:"Паспорт", icon:"🪪", result:"ok", text:"Действителен" },
+      { label:"Стоп-лист", icon:"🚫", result:"ok", text:"Не значится" },
+      { label:"Серийный №", icon:"🔢", result:"fail", text:"В РОЗЫСКЕ" },
+      { label:"Поведение", icon:"👁", result:"fail", text:"Подозрительное" },
+    ],
+    suspicion: 85, correct: "detain", reward: 250,
+    explain: "Серийный номер в базе краденого! Без доверенности на чужую технику — задержать."
+  },
+  {
+    name: "Елена Фомина", age: 45, emoji: "👩",
+    doc: "В порядке", reg: "Местная", history: "Нет визитов", time: "16:30",
+    behaviors: [{t:"уверена",s:"ok"},{t:"прямолинейна",s:"ok"},{t:"расстроена",s:"neutral"}],
+    item: { icon:"💎", name:"Бриллиантовые серьги", desc:"Золото 750°, 2×0.3 карата",
+      price:"45 000 ₽", serial:"Проба 750 подтверждена", condition:"Отличное", docs:"Сертификат" },
+    speech: "«Развожусь, нужны деньги. Серьги мужа — но это совместно нажитое имущество.»",
+    questions: [
+      { q:"Есть решение суда?", a:"Нет ещё, но я имею право — это моё!", sus: +20 },
+      { q:"Муж в курсе?", a:"Нет, он не знает. Но это наше общее имущество!", sus: +20 },
+    ],
+    clue: "⚠️ Муж не знает о сделке. Совместное имущество без согласия супруга — риск!",
+    checks: [
+      { label:"Паспорт", icon:"🪪", result:"ok", text:"Действителен" },
+      { label:"Стоп-лист", icon:"🚫", result:"ok", text:"Не значится" },
+      { label:"Сертификат", icon:"📜", result:"ok", text:"Подлинный" },
+      { label:"Согласие супруга", icon:"👥", result:"fail", text:"ОТСУТСТВУЕТ" },
+    ],
+    suspicion: 60, correct: "reject", reward: 150,
+    explain: "Без нотариального согласия супруга на совместное имущество — отказать. Это защита ломбарда."
+  },
+  {
+    name: "Игорь Васин", age: 37, emoji: "🧑",
+    doc: "В порядке", reg: "Местная", history: "Чистая", time: "12:00",
+    behaviors: [{t:"спокоен",s:"ok"},{t:"деловой",s:"ok"},{t:"нейтральный",s:"neutral"}],
+    item: { icon:"🎮", name:"PlayStation 5 + 5 игр", desc:"Консоль, полный комплект",
+      price:"35 000 ₽", serial:"SN: CFI-1108A-039284", condition:"Отличное", docs:"Чек 2023, коробка" },
+    speech: "«Продаю — перехожу на Xbox. Всё родное, в отличном состоянии.»",
+    questions: [
+      { q:"Серийный совпадает?", a:"Вот коробка, вот консоль — всё совпадает.", sus: -10 },
+      { q:"Почему не Авито?", a:"Нужны деньги сегодня, Авито долго.", sus: -5 },
+    ],
+    clue: "Серийный номер совпадает с коробкой. Чек имеется. Не в розыске.",
+    checks: [
+      { label:"Паспорт", icon:"🪪", result:"ok", text:"Действителен" },
+      { label:"Стоп-лист", icon:"🚫", result:"ok", text:"Не значится" },
+      { label:"Серийный №", icon:"🔢", result:"ok", text:"Не в розыске" },
+      { label:"Поведение", icon:"👁", result:"ok", text:"Норма" },
+    ],
+    suspicion: 10, correct: "approve", reward: 100,
+    explain: "Всё чисто: документы, серийный номер, поведение. Правильно: принять."
+  },
+  {
+    name: "Валентина Семёнова", age: 71, emoji: "👵",
+    doc: "В порядке", reg: "Местная", history: "Нет визитов", time: "15:20",
+    behaviors: [{t:"взволнована",s:"sus"},{t:"торопится",s:"sus"},{t:"не смотрит в глаза",s:"sus"},{t:"говорит по скрипту",s:"sus"}],
+    item: { icon:"💍", name:"Золотые украшения (набор)", desc:"Кольца, серьги, цепочка — всё сразу",
+      price:"87 000 ₽", serial:"Пробы 585°/750°", condition:"Отличное", docs:"Нет (семейные)"},
+    speech: "«Мне срочно нужны деньги. Сын попал в аварию, нужно 80 тысяч. Я потом выкуплю всё, мне сказали приехать сюда.»",
+    questions: [
+      { q:"Кто вам сказал приехать?", a:"По телефону позвонили... следователь или врач, я не помню. Сказали — срочно, никому не говорить.", sus: +35 },
+      { q:"Вы звонили сыну?", a:"Нет, они сказали не звонить, чтобы не мешать операции... Он же в больнице.", sus: +30 },
+    ],
+    clue: "⚠️ СХЕМА МОШЕННИКОВ: «ваш родственник в беде». Клиент действует по инструкции незнакомцев. Запрет звонить близким — классический признак.",
+    checks: [
+      { label:"Паспорт", icon:"🪪", result:"ok", text:"Действителен" },
+      { label:"Стоп-лист", icon:"🚫", result:"ok", text:"Не значится" },
+      { label:"Признаки давления", icon:"🧠", result:"fail", text:"ЕСТЬ (скрипт, спешка)" },
+      { label:"Связь с родными", icon:"📵", result:"fail", text:"Запрещена мошенниками" },
+    ],
+    suspicion: 75, correct: "reject", reward: 300,
+    explain: "Классическая схема телефонного мошенничества. Правильно: отказать, мягко поговорить с клиентом, предложить позвонить сыну при вас. Возможно — вызвать полицию."
+  },
+  {
+    name: "Руслан Ахметов", age: 41, emoji: "🧑‍🦱",
+    doc: "В порядке", reg: "Местная", history: "Нет визитов", time: "13:10",
+    behaviors: [{t:"очень общителен",s:"sus"},{t:"хвалит оценщика",s:"sus"},{t:"отвлекает разговором",s:"sus"},{t:"напарник у входа",s:"sus"}],
+    item: { icon:"💍", name:"Золотая цепочка 585°", desc:"Мужская, 60 см, ~25 г — с виду",
+      price:"75 000 ₽", serial:"Проба 585° (визуально)", condition:"Хорошее", docs:"Нет" },
+    speech: "«Дорогой, ты лучший оценщик в городе! Быстро сделаем? Мне некогда, друг ждёт у входа. Сколько дашь?»",
+    questions: [
+      { q:"Откуда цепочка?", a:"Подарок был, давно. Зачем документы на золото? Смешной вопрос!", sus: +20 },
+      { q:"Кто ждёт у входа?", a:"Просто друг, он не при делах. Ну давай быстрее, а?", sus: +25 },
+    ],
+    clue: "⚠️ СХЕМА «ПОДМЕНА»: пока оценщик отвлечён разговором — напарник может подменить предмет. Проверить пробу прибором обязательно! Вес не соответствует виду.",
+    checks: [
+      { label:"Паспорт", icon:"🪪", result:"ok", text:"Действителен" },
+      { label:"Проба (прибор)", icon:"⚗️", result:"fail", text:"НЕ ЗОЛОТО (латунь)" },
+      { label:"Вес предмета", icon:"⚖️", result:"warn", text:"Лёгче заявленного" },
+      { label:"Напарник", icon:"👥", result:"fail", text:"Зафиксирован у входа" },
+    ],
+    suspicion: 80, correct: "reject", reward: 250,
+    explain: "Схема подмены: клиент отвлекает болтовнёй пока напарник ждёт сигнала. Прибор показал латунь под золотым напылением. Правильно: отказать, зафиксировать обоих."
+  },
+  {
+    name: "Анна Крылова", age: 33, emoji: "👩‍🦰",
+    doc: "ПОДДЕЛЬНЫЙ (другое фото)", reg: "Местная (не совпадает)", history: "Нет данных", time: "17:55",
+    behaviors: [{t:"уверена в себе",s:"neutral"},{t:"знает процедуру",s:"sus"},{t:"не смотрит в камеру",s:"sus"}],
+    item: { icon:"📱", name:"iPhone 15 Pro Max", desc:"Смартфон, 256GB, чёрный",
+      price:"95 000 ₽", serial:"IMEI: 490154203237518", condition:"Как новый", docs:"Коробка есть" },
+    speech: "«Сдаю телефон, срочно нужны деньги. Паспорт? Вот, пожалуйста.»",
+    questions: [
+      { q:"Это ваш паспорт?", a:"Конечно мой! Что за вопрос, вы что, сомневаетесь?", sus: +25 },
+      { q:"Телефон на вас?", a:"Ну... аккаунт удалила уже, готовилась к сдаче.", sus: +30 },
+    ],
+    clue: "⚠️ Фото в паспорте не совпадает с клиентом. Адрес регистрации не соответствует прописке. IMEI проверяется...",
+    checks: [
+      { label:"Паспорт (фото)", icon:"🪪", result:"fail", text:"ФОТО НЕ СОВПАДАЕТ" },
+      { label:"Стоп-лист", icon:"🚫", result:"warn", text:"Похожая личность" },
+      { label:"IMEI", icon:"📡", result:"fail", text:"В РОЗЫСКЕ" },
+      { label:"Поведение", icon:"👁", result:"warn", text:"Избегает камеры" },
+    ],
+    suspicion: 95, correct: "detain", reward: 300,
+    explain: "Поддельный паспорт + телефон в розыске. Задержать, вызвать полицию, зафиксировать на камеру. Не возвращать документ."
+  },
+  {
+    name: "Георгий Мамедов", age: 58, emoji: "👴",
+    doc: "В порядке", reg: "Местная", history: "Чистая", time: "11:00",
+    behaviors: [{t:"степенный",s:"ok"},{t:"знающий",s:"sus"},{t:"давит авторитетом",s:"sus"}],
+    item: { icon:"🏺", name:"Брошь «антикварная»", desc:"Якобы серебро 19 века, с гравюрой",
+      price:"заявлено 150 000 ₽", serial:"Клеймо нечитаемое", condition:"Состаренное", docs:"«Семейная реликвия»" },
+    speech: "«Это вещь моей бабушки, царской эпохи. Настоящее серебро, очень редкая. Я знаю — она стоит минимум 150 тысяч. Меньше не возьму.»",
+    questions: [
+      { q:"Есть экспертиза?", a:"Зачем экспертиза? Я сам ювелир 30 лет. Поверьте мне на слово.", sus: +20 },
+      { q:"Почему именно к нам?", a:"Вы дадите больше других. Мне знающий человек сказал.", sus: +15 },
+    ],
+    clue: "⚠️ Клеймо нечитаемое — намеренно затёрто. Прибор показывает сплав с низким содержанием серебра. Искусственное старение — царапины не соответствуют возрасту.",
+    checks: [
+      { label:"Паспорт", icon:"🪪", result:"ok", text:"Действителен" },
+      { label:"Проба (прибор)", icon:"⚗️", result:"fail", text:"Серебро <30% (мельхиор)" },
+      { label:"Клеймо", icon:"🔬", result:"fail", text:"Нечитаемо, затёрто" },
+      { label:"Антикварность", icon:"🏛️", result:"warn", text:"Искусственное старение" },
+    ],
+    suspicion: 70, correct: "reject", reward: 200,
+    explain: "Классическая схема с псевдоантиквариатом. Мельхиоровая брошь под видом антикварного серебра. Клеймо намеренно уничтожено. Правильно: отказать, зафиксировать предмет."
+  },
+  {
+    name: "Виктор + Олег", age: 29, emoji: "👬",
+    doc: "Олег: просрочен / Виктор: в порядке", reg: "Оба иногородние", history: "Нет данных", time: "18:30",
+    behaviors: [{t:"приходят вдвоём",s:"sus"},{t:"перебивают друг друга",s:"sus"},{t:"истории не совпадают",s:"sus"},{t:"давят на время",s:"sus"}],
+    item: { icon:"⌚", name:"Rolex Submariner (реплика?)", desc:"Часы, якобы оригинал, без коробки",
+      price:"заявлено 800 000 ₽", serial:"SN: затёрт", condition:"Хорошее", docs:"Нет" },
+    speech: "«Это часы дяди, он нас прислал. Нет, стоп — это наши часы, мы вместе купили. Давайте быстрее, нам ехать надо!»",
+    questions: [
+      { q:"Чьи именно часы?", a:"(переглядываются) ...Общие. Ну, его больше. Неважно это!", sus: +35 },
+      { q:"Почему без коробки?", a:"Потеряли. Вы что, не верите? Вот, смотрите какие красивые!", sus: +20 },
+    ],
+    clue: "⚠️ БРИГАДНАЯ СХЕМА: двое клиентов дают противоречивые показания о владельце. Серийный номер уничтожен. Часы — высококачественная реплика.",
+    checks: [
+      { label:"Паспорт (Виктор)", icon:"🪪", result:"ok", text:"Действителен" },
+      { label:"Паспорт (Олег)", icon:"🪪", result:"fail", text:"ПРОСРОЧЕН" },
+      { label:"Серийный №", icon:"🔢", result:"fail", text:"Намеренно уничтожен" },
+      { label:"Подлинность", icon:"🔬", result:"fail", text:"РЕПЛИКА (китайский мех.)" },
+    ],
+    suspicion: 95, correct: "detain", reward: 350,
+    explain: "Бригадная схема сбыта краденого/поддельного. Противоречия в показаниях, уничтоженный серийник, реплика под оригинал. Задержать обоих, вызвать полицию."
+  },
+];
+
+let state = {};
+
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const names = ['client','item','dialog','checks'];
+    t.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => {
+    p.classList.toggle('active', p.id === 'tab-' + name);
+  });
+  document.getElementById('scroll').scrollTop = 0;
+}
+
+function restartGame() {
+  document.getElementById('game-over').classList.remove('show');
+  state = { score:0, lives:3, streak:0, clientIndex:0,
+    clientOrder: shuffleArray([...Array(CLIENTS.length).keys()]),
+    questionsAsked:[], checksRevealed:[], currentSuspicion:0, decided:false };
+  renderHUD();
+  loadClient();
+}
+
+function renderHUD() {
+  document.getElementById('score-val').textContent = state.score;
+  document.getElementById('lives-val').textContent = '❤️'.repeat(state.lives) + '🖤'.repeat(3-state.lives);
+  document.getElementById('streak-val').textContent = state.streak;
+}
+
+function loadClient() {
+  if (state.clientIndex >= CLIENTS.length) {
+    state.clientOrder = shuffleArray([...Array(CLIENTS.length).keys()]);
+    state.clientIndex = 0;
+  }
+  const c = CLIENTS[state.clientOrder[state.clientIndex]];
+  state.questionsAsked = [];
+  state.checksRevealed = [];
+  state.currentSuspicion = 0;
+  state.decided = false;
+
+  document.getElementById('client-emoji').textContent = c.emoji;
+  document.getElementById('speech-avatar').textContent = c.emoji;
+  document.getElementById('client-name').textContent = c.name;
+  document.getElementById('client-age').textContent = c.age + ' лет';
+  document.getElementById('doc-status').textContent = c.doc;
+  document.getElementById('reg-status').textContent = c.reg;
+  document.getElementById('history-status').textContent = c.history;
+  document.getElementById('time-status').textContent = c.time;
+
+  const tc = document.getElementById('behavior-tags');
+  tc.innerHTML = '';
+  c.behaviors.forEach(b => {
+    const t = document.createElement('span');
+    t.className = 'tag ' + b.s;
+    t.textContent = b.t;
+    tc.appendChild(t);
+  });
+
+  document.getElementById('item-icon').textContent = c.item.icon;
+  document.getElementById('item-name').textContent = c.item.name;
+  document.getElementById('item-desc').textContent = c.item.desc;
+  document.getElementById('item-price').textContent = c.item.price;
+  document.getElementById('item-serial').textContent = c.item.serial;
+  document.getElementById('item-condition').textContent = c.item.condition;
+  document.getElementById('item-docs').textContent = c.item.docs;
+  document.getElementById('clue-text').textContent = 'Задавайте вопросы и проводите проверки перед вынесением решения.';
+  document.getElementById('client-speech').textContent = c.speech;
+  document.getElementById('avatar-ring').style.borderColor = 'transparent';
+
+  const qc = document.getElementById('questions');
+  qc.innerHTML = '';
+  c.questions.forEach((q, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'q-btn';
+    btn.textContent = '❓ ' + q.q;
+    btn.id = 'q-btn-' + i;
+    btn.onclick = () => askQuestion(i);
+    qc.appendChild(btn);
+  });
+
+  const cc = document.getElementById('checks-list');
+  cc.innerHTML = '';
+  c.checks.forEach((ch, i) => {
+    const div = document.createElement('div');
+    div.className = 'check-item';
+    div.id = 'check-' + i;
+    div.innerHTML = `<span class="check-ico">🔒</span><span class="check-lbl">${ch.label}</span><span class="check-res" id="cr-${i}"></span>`;
+    div.onclick = () => revealCheck(i);
+    cc.appendChild(div);
+  });
+
+  updateMeter(5);
+  showTab('client');
+  renderHUD();
+}
+
+function askQuestion(idx) {
+  if (state.questionsAsked.includes(idx)) return;
+  state.questionsAsked.push(idx);
+  const c = CLIENTS[state.clientOrder[state.clientIndex]];
+  const q = c.questions[idx];
+  document.getElementById('client-speech').textContent = q.a;
+  const btn = document.getElementById('q-btn-' + idx);
+  btn.disabled = true;
+  state.currentSuspicion = Math.max(0, Math.min(100, state.currentSuspicion + q.sus));
+  if (state.questionsAsked.length === c.questions.length)
+    document.getElementById('clue-text').textContent = c.clue;
+  updateMeterFromState();
+}
+
+function revealCheck(idx) {
+  if (state.checksRevealed.includes(idx)) return;
+  state.checksRevealed.push(idx);
+  const c = CLIENTS[state.clientOrder[state.clientIndex]];
+  const ch = c.checks[idx];
+  document.querySelector('#check-' + idx + ' .check-ico').textContent = ch.icon;
+  const res = document.getElementById('cr-' + idx);
+  res.className = 'check-res ' + ch.result;
+  res.textContent = { ok:'✔ '+ch.text, fail:'✘ '+ch.text, warn:'⚠ '+ch.text }[ch.result];
+  const d = { ok:-8, warn:+15, fail:+25 };
+  state.currentSuspicion = Math.max(0, Math.min(100, state.currentSuspicion + d[ch.result]));
+  if (state.checksRevealed.length === c.checks.length)
+    document.getElementById('clue-text').textContent = c.clue;
+  updateMeterFromState();
+}
+
+function updateMeterFromState() {
+  const c = CLIENTS[state.clientOrder[state.clientIndex]];
+  const ratio = (state.questionsAsked.length + state.checksRevealed.length) /
+                (c.questions.length + c.checks.length);
+  const v = Math.min(100, Math.round(state.currentSuspicion * ratio + c.suspicion * (1-ratio) * 0.1));
+  updateMeter(v);
+}
+
+function updateMeter(val) {
+  val = Math.round(val);
+  const bar = document.getElementById('meter-bar');
+  const mv = document.getElementById('meter-value');
+  const ring = document.getElementById('avatar-ring');
+  let color = val > 70 ? '#c94444' : val > 40 ? '#d97c2a' : '#4caf71';
+  bar.style.width = val + '%';
+  bar.style.background = color;
+  mv.style.color = color;
+  mv.textContent = val + '%';
+  ring.style.borderColor = val > 50 ? color : 'transparent';
+}
+
+function makeVerdict(verdict) {
+  if (state.decided) return;
+  state.decided = true;
+  const c = CLIENTS[state.clientOrder[state.clientIndex]];
+  const correct = verdict === c.correct;
+  let icon, title, desc, points;
+
+  if (correct) {
+    state.streak++;
+    const bonus = state.streak > 2 ? Math.round(c.reward * 0.5 * (state.streak - 2)) : 0;
+    points = c.reward + bonus;
+    state.score += points;
+    const scamReject = ['Валентина Семёнова','Руслан Ахметов','Георгий Мамедов','Виктор + Олег','Анна Крылова'];
+    const isScamCase = scamReject.includes(c.name);
+    const t = {
+      approve:['✅','Верно — принято!'],
+      reject: (isScamCase && verdict==='reject') ? ['🛡️','Схема раскрыта!'] : ['🚫','Верно — отказано!'],
+      detain: ['🚨','Задержан! Молодец!']
+    };
+    [icon, title] = t[verdict];
+    desc = c.explain + (bonus > 0 ? ` (+${bonus} бонус за серию ×${state.streak})` : '');
+  } else {
+    state.streak = 0;
+    state.lives--;
+    points = 0;
+    icon = '❌'; title = 'Ошибка!';
+    const cl = { approve:'принять ✅', reject:'отказать 🚫', detain:'задержать 🚨' };
+    desc = `Правильно было: ${cl[c.correct]}. ${c.explain}`;
+  }
+
+  document.getElementById('result-icon').textContent = icon;
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('result-desc').textContent = desc;
+  document.getElementById('result-score').textContent = correct ? `+${points} очков` : '−1 жизнь';
+  document.getElementById('result-overlay').classList.add('show');
+  renderHUD();
+
+  if (state.lives <= 0) {
+    setTimeout(() => {
+      document.getElementById('result-overlay').classList.remove('show');
+      document.getElementById('final-score').textContent = state.score + ' очков';
+      document.getElementById('final-stats').textContent = `Клиентов: ${state.clientIndex} | Серия: ${state.streak}`;
+      document.getElementById('game-over').classList.add('show');
+    }, 2800);
+  }
+}
+
+function nextClient() {
+  document.getElementById('result-overlay').classList.remove('show');
+  state.clientIndex++;
+  renderHUD();
+  loadClient();
+}
+
+restartGame();
+</script>
+</body>
+</html>
